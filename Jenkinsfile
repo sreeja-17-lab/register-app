@@ -4,6 +4,7 @@ pipeline {
     }
     tools {
         jdk 'Java17'
+        maven 'Maven3'
     }
     stages {
         stage('Cleanup Workspace') {
@@ -24,15 +25,6 @@ pipeline {
         stage('Test Application') {
             steps {
                 sh 'mvn test'
-            }
-        }
-        stage('Code Analysis') {
-            steps {
-                script {
-                    withSonarQubeEnv(credentialsId: 'jenkins-sonarqbe-token') {
-                        sh 'mvn sonar:sonar'
-                    }
-                }
             }
         }
     }
