@@ -20,7 +20,7 @@ pipeline {
                 git(
                     branch: 'main',
                     credentialsId: 'github',
-                    url: 'https://github.com/Ashfaque-9x/register-app'
+                    url: 'https://github.com/sreeja-17-lab/register-app'
                 )
             }
         }
