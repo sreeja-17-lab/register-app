@@ -15,26 +15,20 @@ pipeline {
 
         stage('Build') {
             steps {
-                dir('register-app') {
-                    sh 'mvn clean package'
-                }
+                sh 'mvn clean package'
             }
         }
 
         stage('Test') {
             steps {
-                dir('register-app') {
-                    sh 'mvn test'
-                }
+                sh 'mvn test'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                dir('register-app') {
-                    withSonarQubeEnv('jenkins-sonarq-token') {
-                        sh "mvn sonar:sonar -Dsonar.projectKey=register-app -Dsonar.host.url=http://<your-sonarqube-ip>:9000"
-                    }
+                withSonarQubeEnv('jenkins-sonarq-token') {
+                    sh "mvn sonar:sonar -Dsonar.projectKey=register-app -Dsonar.host.url=http://localhost:9000"
                 }
             }
         }
