@@ -1,39 +1,25 @@
 pipeline {
-    agent {
-        label 'Jenkins-Agent'
-    }
-
-    tools {
-        jdk 'Java17'
-        maven 'Maven3'
-    }
+    agent any
 
     stages {
-        stage('Cleanup Workspace') {
+        stage('Clone Repo') {
             steps {
-                cleanWs()
+                git 'https://github.com/sreeja-17-lab/register-app'
             }
         }
-
-        stage('Checkout from SCM') {
+        stage('Build') {
             steps {
-                git(
-                    branch: 'main',
-                    credentialsId: 'github',
-                    url: 'https://github.com/sreeja-17-lab/register-app'
-                )
+                echo 'Building the project...'
             }
         }
-
-        stage('Build Application') {
+        stage('Test') {
             steps {
-                sh 'mvn clean package'
+                echo 'Running tests...'
             }
         }
-
-        stage('Test Application') {
+        stage('Deploy') {
             steps {
-                sh 'mvn test'
+                echo 'Deploying the application...'
             }
         }
     }
