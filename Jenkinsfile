@@ -1,7 +1,5 @@
 pipeline {
-    agent {
-        label 'Jenkins-Agent'
-    }
+    agent { label 'Jenkins-Agent' }
 
     tools {
         jdk 'Java17'
@@ -9,21 +7,19 @@ pipeline {
     }
 
     environment {
-        SONAR_HOST_URL = 'http://<your-sonarqube-ip>:9000'  // Replace with actual IP or hostname
+        SONAR_HOST_URL = 'http://<your-sonarqube-ip>:9000'
     }
 
     stages {
-        stage('Checkout from SCM') {
+        stage('Checkout') {
             steps {
-                git branch: 'main',
-                    credentialsId: 'github',
-                    url: 'https://github.com/sreeja-17-lab/register-app'
+                git branch: 'main', credentialsId: 'github', url: 'https://github.com/sreeja-17-lab/register-app'
             }
         }
 
         stage('Build') {
             steps {
-                dir('register-app') { // 👈 if your pom.xml is in a subfolder
+                dir('register-app') {
                     sh 'mvn clean package'
                 }
             }
