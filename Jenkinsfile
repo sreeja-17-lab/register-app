@@ -1,15 +1,15 @@
 pipeline {
     agent {
-        label 'Jenkins-Agent' // Replace with your agent label, if different
+        label 'Jenkins-Agent'
     }
 
     tools {
-        jdk 'Java17'         // Make sure this matches the name under Global Tool Configuration
-        maven 'Maven3'       // Same here
+        jdk 'Java17'
+        maven 'Maven3'
     }
 
     environment {
-        SONAR_HOST_URL = 'http://<your-sonarqube-ip>:9000'  // 🔁 Replace with actual SonarQube IP or domain
+        SONAR_HOST_URL = 'http://<your-sonarqube-ip>:9000'  // Replace with actual IP or hostname
     }
 
     stages {
@@ -23,20 +23,26 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'mvn clean package'
+                dir('register-app') { // 👈 if your pom.xml is in a subfolder
+                    sh 'mvn clean package'
+                }
             }
         }
 
         stage('Test') {
             steps {
-                sh 'mvn test'
+                dir('register-app') {
+                    sh 'mvn test'
+                }
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('jenkins-sonarq-token') {
-                    sh "mvn sonar:sonar -Dsonar.projectKey=register-app -Dsonar.host.url=$SONAR_HOST_URL"
+                dir('register-app') {
+                    withSonarQubeEnv('jenkins-sonarq-token') {
+                        sh "mvn sonar:sonar -Dsonar.projectKey=register-app -Dsonar.host.url=$SONAR_HOST_URL"
+                    }
                 }
             }
         }
