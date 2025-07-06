@@ -41,8 +41,13 @@ pipeline {
 
         stage("SonarQube Analysis") {
             steps {
-                withSonarQubeEnv('jenkins-sonarq-token') {
-                    sh "mvn sonar:sonar -Dsonar.projectKey=register-app -Dsonar.host.url=http://localhost:9000"
+                // This must match the name configured in Manage Jenkins > Configure System > SonarQube servers
+                withSonarQubeEnv('SonarQube') {
+                    sh """
+                        mvn sonar:sonar \
+                        -Dsonar.projectKey=register-app \
+                        -Dsonar.host.url=http://localhost:9000
+                    """
                 }
             }
         }
