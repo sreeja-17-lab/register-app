@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'Jenkins-Agent' }
 
     tools {
         jdk 'Java17'
@@ -7,19 +7,25 @@ pipeline {
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Cleanup Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+
+        stage('Checkout from SCM') {
             steps {
                 git branch: 'main', credentialsId: 'github', url: 'https://github.com/sreeja-17-lab/register-app'
             }
         }
 
-        stage('Build') {
+        stage('Build Application') {
             steps {
                 sh 'mvn clean package'
             }
         }
 
-        stage('Test') {
+        stage('Test Application') {
             steps {
                 sh 'mvn test'
             }
@@ -27,8 +33,10 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('jenkins-sonarq-token') {
-                    sh "mvn sonar:sonar -Dsonar.projectKey=register-app -Dsonar.host.url=http://localhost:9000"
+                script {
+                    withSonarQubeEnv(credentialsId: 'jenkins-sonarqube-token') {
+                        sh 'mvn sonar:sonar'
+                    }
                 }
             }
         }
