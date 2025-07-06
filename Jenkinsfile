@@ -1,17 +1,13 @@
 pipeline {
-    agent { label 'Jenkins-Agent' }
+    agent any
 
     tools {
         jdk 'Java17'
         maven 'Maven3'
     }
 
-    environment {
-        SONAR_HOST_URL = 'http://<your-sonarqube-ip>:9000'
-    }
-
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
                 git branch: 'main', credentialsId: 'github', url: 'https://github.com/sreeja-17-lab/register-app'
             }
@@ -37,7 +33,7 @@ pipeline {
             steps {
                 dir('register-app') {
                     withSonarQubeEnv('jenkins-sonarq-token') {
-                        sh "mvn sonar:sonar -Dsonar.projectKey=register-app -Dsonar.host.url=$SONAR_HOST_URL"
+                        sh "mvn sonar:sonar -Dsonar.projectKey=register-app -Dsonar.host.url=http://<your-sonarqube-ip>:9000"
                     }
                 }
             }
