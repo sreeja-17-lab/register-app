@@ -4,19 +4,22 @@ pipeline {
     stages {
         stage('Clone Repo') {
             steps {
-                git 'https://github.com/sreeja-17-lab/register-app'
+                git url: 'https://github.com/sreeja-17-lab/register-app'
             }
         }
+
         stage('Build') {
             steps {
                 echo 'Building the project...'
             }
         }
+
         stage('Test') {
             steps {
                 echo 'Running tests...'
             }
         }
+
         stage('Deploy') {
             steps {
                 echo 'Deploying the application...'
