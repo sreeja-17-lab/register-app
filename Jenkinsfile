@@ -1,52 +1,70 @@
 pipeline {
     agent { label 'Jenkins-Agent' }
+
     tools {
         jdk 'Java17'
         maven 'Maven3'
     }
+
     environment {
         APP_NAME = "register-app-pipeline"
         RELEASE = "1.0.0"
         DOCKER_USER = "sreeja17"
-        IMAGE_NAME = "${DOCKER_USER}-${APP_NAME}"
+        IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
-        SONAR_URL = "http:/54.196.181.41/:9000"
     }
+
     stages {
-        stage('Cleanup Workspace') {
+        stage("Cleanup Workspace") {
             steps {
                 cleanWs()
             }
         }
-        stage('Checkout from SCM') {
+
+        stage("Checkout from SCM") {
             steps {
                 git branch: 'main', credentialsId: 'github', url: 'https://github.com/Ashfaque-9x/register-app'
             }
         }
-        stage('Build Application') {
+
+        stage("Build Application") {
             steps {
-                sh 'mvn clean package'
+                sh "mvn clean package"
             }
         }
-        stage('Test Application') {
+
+        stage("Test Application") {
             steps {
-                sh 'mvn test'
+                sh "mvn test"
             }
         }
-        stage('SonarQube Analysis') {
+
+        stage("SonarQube Analysis") {
             steps {
-                withSonarQubeEnv(credentialsId: 'jenkins-sonarque-token') {
-                    sh 'mvn sonar:sonar'
+                // This must match the name configured in Manage Jenkins > Configure System > SonarQube servers
+                withSonarQubeEnv('SonarQube') {
+                    sh """
+                        mvn sonar:sonar \
+                        -Dsonar.projectKey=register-app \
+                        -Dsonar.host.url=http://localhost:9000
+                    """
                 }
             }
         }
-        stage('Build & Push Docker Image') {
+
+        stage("Quality Gate") {
+            steps {
+                waitForQualityGate abortPipeline: true
+            }
+        }
+
+        stage("Build & Push Docker Image") {
             steps {
                 script {
-                    docker.withRegistry('', 'DOCKER_PASS') {
-                        docker_image = docker.build "${IMAGE_NAME}"
-                        docker_image.push("${IMAGE_TAG}")
-                        docker_image.push('latest')
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
+                        def dockerImage = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
+                        dockerImage.push()
+                        dockerImage.push('latest')
                     }
                 }
             }
