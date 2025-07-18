@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'jenkins-agent' }
+    agent { label 'Jenkins-Agent' }
 
     tools {
         jdk 'Java17'
@@ -7,23 +7,22 @@ pipeline {
     }
 
     environment {
-        APP_NAME     = "register-app-pipeline"
+        APP_NAME     = "sample-app"
         RELEASE      = "1.0.0"
         DOCKER_USER  = "sreeja17"
-        DOCKER_PASS  = credentials('dockerhub-pass') // store in Jenkins credentials
+        DOCKER_PASS  = credentials('dockerhub-pass')
         IMAGE_NAME   = "${DOCKER_USER}/${APP_NAME}"
         IMAGE_TAG    = "${RELEASE}-${BUILD_NUMBER}"
     }
 
     stages {
-
-        stage("Cleanup Workspace") {
+        stage("Clean Workspace") {
             steps {
                 cleanWs()
             }
         }
 
-        stage("Checkout from SCM") {
+        stage("Checkout") {
             steps {
                 git branch: 'main',
                     credentialsId: 'github',
@@ -31,13 +30,13 @@ pipeline {
             }
         }
 
-        stage("Build Application") {
+        stage("Build") {
             steps {
                 sh 'mvn clean package'
             }
         }
 
-        stage("Test Application") {
+        stage("Test") {
             steps {
                 sh 'mvn test'
             }
@@ -67,7 +66,7 @@ pipeline {
                     docker.withRegistry('', 'dockerhub-pass') {
                         def docker_image = docker.build("${IMAGE_NAME}")
                         docker_image.push("${IMAGE_TAG}")
-                        docker_image.push('latest')
+                        docker_image.push("latest")
                     }
                 }
             }
