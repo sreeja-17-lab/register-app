@@ -1,28 +1,44 @@
 pipeline {
-    agent any
-
+    agent { label 'Jenkins-Agent' }
+    tools {
+        jdk 'Java17'
+        maven 'Maven3'
+    }
     stages {
-        stage('Build') {
+        stage('Cleanup Workspace') {
             steps {
-                sh 'mvn clean install'
+                cleanWs()
             }
         }
-
-        stage('Test') {
+        stage('Checkout from SCM') {
             steps {
-                sh 'echo Running Tests'
+                git branch: 'main', credentialsId: 'github', url: 'https://github.com/Ashfaque-9x/register-app'
             }
         }
-
-        stage('Code Quality') {
+        stage('Build Application') {
             steps {
-                sh 'echo SonarQube Analysis'
+                sh 'mvn clean package'
             }
         }
-
-        stage('Deploy') {
+        stage('Test Application') {
             steps {
-                sh './deploy.sh'
+                sh 'mvn test'
+            }
+        }
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    withSonarQubeEnv(credentialsId: 'jenkins-sonarqube-token') {
+                        sh 'mvn sonar:sonar'
+                    }
+                }
+            }
+        }
+        stage('Quality Gate') {
+            steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'jenkins-sonarqube-token'
+                }
             }
         }
     }
